@@ -1,0 +1,85 @@
+/*!
+ *    Copyright (c) 2018-2025, lengleng All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * Neither the name of the pig4cloud.com developer nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * Author: lengleng (wangiegie@gmail.com)
+ */
+
+.sidebar-container {
+    padding-top: 20px;
+    flex: 0 0 auto;
+    width: auto;
+    height: 100%;
+    background: #fff;
+    transition: width .6s;
+    border-radius: 5px;
+    box-sizing: border-box;
+    .el-menu-item,
+    .el-submenu__title {
+        font-weight: 700;
+        font-size: 12px;
+        height: 48px;
+        line-height: 48px;
+    }
+    .el-menu-item {
+        &:hover {
+            background-color: transparent !important;
+            color: $mainBg;
+            span,
+            i {
+                color: $mainBg;
+            }
+        }
+        &.is-active {
+            background-color: #e2edff !important;
+            span,
+            i {
+                color: $mainBg
+            }
+            &:hover {
+                background-color: #e2edff
+            }
+            &::before {
+                content: " ";
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 4px;
+                background: $mainBg;
+                position: absolute
+            }
+        }
+    }
+    .el-submenu__title {
+        &:hover {
+            background-color: transparent !important;
+        }
+    }
+    .el-submenu .el-menu-item {
+        font-weight: normal;
+        &.is-active {
+            background-color: #e2edff !important;
+            span,
+            i {
+                color: $mainBg
+            }
+        }
+        &:hover {
+            background-color: transparent;
+            span,
+            i {
+                color: $mainBg;
+            }
+        }
+    }
+}
