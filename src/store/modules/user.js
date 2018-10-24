@@ -37,8 +37,8 @@ const user = {
         userInfo: getStore({
             name: 'userInfo'
         }) || {},
-        adWordsInfo: getStore({
-            name: 'adWordsInfo'
+        adWordsAccount: getStore({
+            name: 'adWordsAccount'
         }) || {},
         permissions: getStore({
             name: 'permissions'
@@ -111,7 +111,7 @@ const user = {
                     commit('SET_ROLES', data.roles)
                     commit('SET_USER_INFO', data.sysUser)
                     commit('SET_PERMISSIONS', data.permissions)
-                    commit('SET_ADWORDS_INFO', data.adWordsInfo)
+                    commit('SET_ADWORDS_ACCOUNT', data.adWordsAccount)
                     resolve(response)
                 }).catch(error => {
                     reject(error)
@@ -134,7 +134,7 @@ const user = {
                     commit('SET_ACCESS_TOKEN', '')
                     commit('SET_REFRESH_TOKEN', '')
                     commit('SET_ROLES', [])
-                    commit('SET_ADWORDS_INFO',[])
+                    commit('SET_ADWORDS_ACCOUNT',[])
                     commit('DEL_ALL_TAG')
                     removeToken()
                     resolve()
@@ -154,7 +154,7 @@ const user = {
                 commit('SET_PERMISSIONS', [])
                     // 清除用户信息
                 commit('SET_USER_INFO', {})
-                commit('SET_ADWORDS_INFO',{})
+                commit('SET_ADWORDS_ACCOUNT',{})
                 commit('SET_ACCESS_TOKEN', '')
                 commit('SET_REFRESH_TOKEN', '')
                 commit('SET_ROLES', [])
@@ -204,11 +204,11 @@ const user = {
                 type: 'session'
             })
         },
-        SET_ADWORDS_INFO: (state, adWordsInfo) => {
-            state.adWordsInfo = adWordsInfo
+        SET_ADWORDS_ACCOUNT: (state, adWordsAccount) => {
+            state.adWordsAccount = adWordsAccount
             setStore({
-                name: 'adWordsInfo',
-                content: state.adWordsInfo,
+                name: 'adWordsAccount',
+                content: state.adWordsAccount,
                 type: 'session'
             })
         },

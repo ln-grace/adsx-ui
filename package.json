@@ -12,7 +12,7 @@
         "karma": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run"
     },
     "dependencies": {
-        "avue-cli": "^1.5.4",
+        "@smallwei/avue": "^1.2.1",
         "axios": "^0.16.2",
         "babel-polyfill": "^6.26.0",
         "compression": "^1.6.2",

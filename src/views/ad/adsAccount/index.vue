@@ -13,12 +13,18 @@
                    v-waves
                    icon="search"
                    @click="handleFilter">搜索</el-button>
-        <el-button v-if="sys_user_add"
+        <el-button v-if="ads_account_add"
                    class="filter-item"
                    style="margin-left: 10px;"
                    @click="handleCreate"
                    type="primary"
                    icon="edit">添加</el-button>
+        <el-button v-if="ads_account_refresh"
+                   class="filter-item"
+                   style="margin-left: 10px;"
+                   @click="handleRefresh"
+                   type="primary"
+                   icon="update">刷新账号信息</el-button>
       </div>
 
       <el-table :key='tableKey'
@@ -135,6 +141,12 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item label="网站地址"
+                      prop="websiteUrl">
+          <el-input v-model="form.websiteUrl"
+                    placeholder="请输入网站地址"></el-input>
+        </el-form-item>
+
         <el-form-item label="经理账号"
                       prop="parentCustomerName">
           <el-input v-model="form.parentCustomerName"
@@ -159,20 +171,28 @@
 </template>
 
 <script>
-import { fetchList, getObj, addObj, putObj, delObj, fetchManagerCustomerByCustomerId } from "@/api/adwordsinfo";
+import {
+  fetchList,
+  getObj,
+  addObj,
+  putObj,
+  delObj,
+  refreshAccount,
+  fetchChildrenManagerTree
+} from "@/api/adsAccount";
 import waves from "@/directive/waves/index.js"; // 水波纹指令
 // import { parseTime } from '@/utils'
 import { mapState, mapGetters } from "vuex";
 import ElRadioGroup from "element-ui/packages/radio/src/radio-group";
 import ElOption from "element-ui/packages/select/src/option";
-import { rejects } from 'assert';
+import { rejects } from "assert";
 
 export default {
   components: {
     ElOption,
     ElRadioGroup
   },
-  name: "table_adwordsinfo",
+  name: "table_ads_account",
   directives: {
     waves
   },
@@ -193,49 +213,45 @@ export default {
       },
       role: [],
       form: {
-        username: undefined,
-        newpassword1: undefined,
-        delFlag: undefined,
-        deptId: undefined
+        customerName: undefined,
+        parentId: undefined,
+        currencyCode: undefined,
+        dateTimeZone: undefined,
+        websiteUrl: undefined,
+        parentId: undefined
       },
       rules: {
-        username: [
+        customerName: [
           {
             required: true,
-            message: "请输入账户",
+            message: "请输入账户名",
             trigger: "blur"
           },
           {
             min: 3,
-            max: 20,
-            message: "长度在 3 到 20 个字符",
+            max: 40,
+            message: "长度在 3 到 40 个字符",
             trigger: "blur"
           }
         ],
-        newpassword1: [
+        dateTimeZone: [
           {
             required: true,
-            message: "请输入密码",
-            trigger: "blur"
-          },
-          {
-            min: 6,
-            max: 20,
-            message: "长度在 6 到 20 个字符",
+            message: "请选择时区",
             trigger: "blur"
           }
         ],
-        deptId: [
+        currencyCode: [
           {
             required: true,
-            message: "请选择部门",
+            message: "请选择币种",
             trigger: "blur"
           }
         ],
-        role: [
+        parentCustomerName: [
           {
             required: true,
-            message: "请选择角色",
+            message: "请选择经理账号",
             trigger: "blur"
           }
         ]
@@ -250,11 +266,7 @@ export default {
         "America/Anchorage",
         "Pacific/Honolulu"
       ],
-      currencyCodeOptions: [
-        "USD",
-        "CNY",
-        "HKD"
-      ],
+      currencyCodeOptions: ["USD", "CNY", "HKD"],
       dialogFormVisible: false,
       dialogManagerCustomerVisible: false,
       userAdd: false,
@@ -273,7 +285,7 @@ export default {
   },
   computed: {
     ...mapState({
-      adWordsInfo: state => state.user.adWordsInfo
+      adsAccount: state => state.user.adsAccount
     }),
     ...mapGetters(["permissions"])
   },
@@ -287,29 +299,30 @@ export default {
     },
     dateTimeZoneFilter(timeZone) {
       const timeZoneMap = {
-        "Asia/Shanghai" :"中国上海",
-        "America/Chicago" : "芝加哥",
-        "America/New_York":"纽约",
-        "America/Denver":"丹佛",
-        "America/Phoenix":"凤凰城",
-        "America/Los_Angeles":"洛杉矶",
-        "America/Anchorage":"安克雷奇",
-        "Pacific/Honolulu":"檀香山"
+        "Asia/Shanghai": "中国上海",
+        "America/Chicago": "芝加哥",
+        "America/New_York": "纽约",
+        "America/Denver": "丹佛",
+        "America/Phoenix": "凤凰城",
+        "America/Los_Angeles": "洛杉矶",
+        "America/Anchorage": "安克雷奇",
+        "Pacific/Honolulu": "檀香山"
       };
       return timeZoneMap[timeZone];
     },
     currencyCodeFilter(currencyCode) {
       const currencyCodeMap = {
-        "USD" :"美元",
-        "CNY" : "人民币",
-        "HKD":"港币"
+        USD: "美元",
+        CNY: "人民币",
+        HKD: "港币"
       };
       return currencyCodeMap[currencyCode];
     }
   },
   created() {
     this.getList();
-    this.sys_user_add = this.permissions["sys_user_add"];
+    this.ads_account_add = this.permissions["ads_account_add"];
+    this.ads_account_refresh = this.permissions["ads_account_refresh"];
   },
   methods: {
     getList() {
@@ -321,10 +334,10 @@ export default {
         this.listLoading = false;
       });
     },
-    getNodeData (data) {
+    getNodeData(data) {
       this.dialogManagerCustomerVisible = false;
       this.form.parentId = data.id;
-      this.form.parentCustomerName = data.name
+      this.form.parentCustomerName = data.name;
     },
     handleFilter() {
       this.listQuery.page = 1;
@@ -342,6 +355,16 @@ export default {
       this.resetTemp();
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
+    },
+    handleRefresh() {
+      refreshAccount(this.adWordsAccount.customerId).then(response => {
+        this.$notify({
+          title: "成功",
+          message: "刷新成功",
+          type: "success",
+          duration: 2000
+        });
+      });
     },
     create(formName) {
       const set = this.$refs;
@@ -363,12 +386,13 @@ export default {
         }
       });
     },
-    handleManagerCustomer () {
-      console.log(this.adWordsInfo.customerId);
-      fetchManagerCustomerByCustomerId(this.adWordsInfo.customerId).then(response => {
-        this.treeManagerCustomerData = response.data;
-        this.dialogManagerCustomerVisible = true;
-      });
+    handleManagerCustomer() {
+      fetchChildrenManagerTree(this.adWordsAccount.customerId).then(
+        response => {
+          this.treeManagerCustomerData = response.data;
+          this.dialogManagerCustomerVisible = true;
+        }
+      );
     },
     cancel(formName) {
       this.dialogFormVisible = false;
@@ -378,9 +402,10 @@ export default {
       this.form = {
         customerId: undefined,
         customerName: "",
-        canManageClients: "",
         currencyCode: "",
-        dateTimeZone: ""
+        dateTimeZone: "",
+        websiteUrl: "",
+        parentId: undefined
       };
     }
   }

@@ -1,20 +1,3 @@
-<!--
-  -    Copyright (c) 2018-2025, lengleng All rights reserved.
-  -
-  - Redistribution and use in source and binary forms, with or without
-  - modification, are permitted provided that the following conditions are met:
-  -
-  - Redistributions of source code must retain the above copyright notice,
-  - this list of conditions and the following disclaimer.
-  - Redistributions in binary form must reproduce the above copyright
-  - notice, this list of conditions and the following disclaimer in the
-  - documentation and/or other materials provided with the distribution.
-  - Neither the name of the pig4cloud.com developer nor the names of its
-  - contributors may be used to endorse or promote products derived from
-  - this software without specific prior written permission.
-  - Author: lengleng (wangiegie@gmail.com)
-  -->
-
 <template>
   <div class="app-container calendar-list-container">
     <basic-container>
@@ -89,6 +72,15 @@
         </el-table-column>
 
         <el-table-column align="center"
+                         label="AdWords账号名"
+                         show-overflow-tooltip>
+          <template slot-scope="scope">
+            <span>{{scope.row.customerName}} </span>
+          </template>
+        </el-table-column>
+
+
+        <el-table-column align="center"
                          class-name="status-col"
                          label="状态">
           <template slot-scope="scope">
@@ -142,6 +134,22 @@
       </el-tree>
     </el-dialog>
 
+
+    <el-dialog :title="textMap[dialogStatus]"
+               :visible.sync="dialogAdsAccountVisible">
+      <el-tree class="filter-tree"
+               :data="treeAdsAccountData"
+               :default-checked-keys="checkedKeys"
+               check-strictly
+               node-key="id"
+               highlight-current
+               ref="adsAccountTree"
+               :props="defaultProps"
+               @node-click="getAdsAccountData"
+               default-expand-all>
+      </el-tree>
+    </el-dialog>
+
     <el-dialog :title="textMap[dialogStatus]"
                :visible.sync="dialogFormVisible">
       <el-form :model="form"
@@ -189,6 +197,17 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item label="AdWords账号"
+                      prop="customerName">
+          <el-input v-model="form.customerName"
+                    placeholder="选择账号"
+                    @focus="handleAdsAccount()"
+                    readonly></el-input>
+          <input type="hidden"
+                 v-model="form.adsAccountId" />
+        </el-form-item>
+
+
         <el-form-item label="状态"
                       v-if="dialogStatus == 'update' && sys_user_del "
                       prop="delFlag">
@@ -219,9 +238,10 @@
 <script>
 import { fetchList, getObj, addObj, putObj, delObj } from "@/api/user";
 import { deptRoleList, fetchDeptTree } from "@/api/role";
+import {fetchChildrenTree } from "@/api/adsAccount";
 import waves from "@/directive/waves/index.js"; // 水波纹指令
 // import { parseTime } from '@/utils'
-import { mapGetters } from "vuex";
+import {  mapState, mapGetters } from "vuex";
 import ElRadioGroup from "element-ui/packages/radio/src/radio-group";
 import ElOption from "element-ui/packages/select/src/option";
 
@@ -237,6 +257,7 @@ export default {
   data () {
     return {
       treeDeptData: [],
+      treeAdsAccountData: [],
       checkedKeys: [],
       defaultProps: {
         children: "children",
@@ -302,6 +323,7 @@ export default {
       rolesOptions: [],
       dialogFormVisible: false,
       dialogDeptVisible: false,
+      dialogAdsAccountVisible: false,
       userAdd: false,
       userUpd: false,
       userDel: false,
@@ -318,6 +340,9 @@ export default {
     };
   },
   computed: {
+     ...mapState({
+      adsAccount: state => state.user.adsAccount
+    }),
     ...mapGetters(["permissions"])
   },
   filters: {
@@ -346,6 +371,12 @@ export default {
         this.listLoading = false;
       });
     },
+    handleAdsAccount () {
+      fetchChildrenTree(this.adsAccount.customerId).then(response => {
+        this.treeAdsAccountData = response.data;
+        this.dialogAdsAccountVisible = true;
+      });
+    },
     getNodeData (data) {
       this.dialogDeptVisible = false;
       this.form.deptId = data.id;
@@ -353,6 +384,12 @@ export default {
       deptRoleList(data.id).then(response => {
         this.rolesOptions = response.data;
       });
+    },
+    getAdsAccountData(data) {
+      this.dialogAdsAccountVisible = false;
+      this.form.adsAccountId = data.id;
+      this.form.customerName = data.name;
+
     },
     handleDept () {
       fetchDeptTree().then(response => {
@@ -474,7 +511,8 @@ export default {
         password: "",
         role: [],
         delFlag: "",
-        deptId: ""
+        deptId: "",
+        adsAccountId: ""
       };
     }
   }
