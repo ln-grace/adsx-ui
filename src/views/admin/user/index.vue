@@ -341,7 +341,7 @@ export default {
   },
   computed: {
      ...mapState({
-      adsAccount: state => state.user.adsAccount
+      adsAccount: state => state.user.adsAccount,
     }),
     ...mapGetters(["permissions"])
   },

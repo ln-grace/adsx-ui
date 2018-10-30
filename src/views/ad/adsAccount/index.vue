@@ -285,7 +285,7 @@ export default {
   },
   computed: {
     ...mapState({
-      adsAccount: state => state.user.adsAccount
+      adsAccount: state => state.user.adsAccount,
     }),
     ...mapGetters(["permissions"])
   },
@@ -357,7 +357,7 @@ export default {
       this.dialogFormVisible = true;
     },
     handleRefresh() {
-      refreshAccount(this.adWordsAccount.customerId).then(response => {
+      refreshAccount(this.adsAccount.customerId).then(response => {
         this.$notify({
           title: "成功",
           message: "刷新成功",
@@ -387,7 +387,8 @@ export default {
       });
     },
     handleManagerCustomer() {
-      fetchChildrenManagerTree(this.adWordsAccount.customerId).then(
+      console.log(this.adsAccount)
+      fetchChildrenManagerTree(this.adsAccount.customerId).then(
         response => {
           this.treeManagerCustomerData = response.data;
           this.dialogManagerCustomerVisible = true;
