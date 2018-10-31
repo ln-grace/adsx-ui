@@ -75,6 +75,15 @@
             <span>{{scope.row.dateTimeZone}}</span>
           </template>
         </el-table-column>
+
+        <el-table-column align="center"
+                         label="转化">
+          <template slot-scope="scope">
+            <el-tag size="medium" :type="scope.row.enableConversionTracking === '0' ? 'info' : ''">
+              {{scope.row.enableConversionTracking | enableConversionTrackingFilter}}
+            </el-tag>
+          </template>
+        </el-table-column>
       </el-table>
 
       <div v-show="!listLoading"
@@ -286,6 +295,7 @@ export default {
   computed: {
     ...mapState({
       adsAccount: state => state.user.adsAccount,
+      userInfo: state => state.user.userInfo
     }),
     ...mapGetters(["permissions"])
   },
@@ -296,6 +306,13 @@ export default {
         1: "经理"
       };
       return statusMap[state];
+    },
+    enableConversionTrackingFilter(isEnable){
+      const enableMap = {
+        0: "未启用",
+        1: "启用"
+      };
+      return enableMap[isEnable];
     },
     dateTimeZoneFilter(timeZone) {
       const timeZoneMap = {
@@ -357,7 +374,7 @@ export default {
       this.dialogFormVisible = true;
     },
     handleRefresh() {
-      refreshAccount(this.adsAccount.customerId).then(response => {
+      refreshAccount(this.userInfo.customerId).then(response => {
         this.$notify({
           title: "成功",
           message: "刷新成功",
@@ -387,13 +404,10 @@ export default {
       });
     },
     handleManagerCustomer() {
-      console.log(this.adsAccount)
-      fetchChildrenManagerTree(this.adsAccount.customerId).then(
-        response => {
-          this.treeManagerCustomerData = response.data;
-          this.dialogManagerCustomerVisible = true;
-        }
-      );
+      fetchChildrenManagerTree(this.userInfo.customerId).then(response => {
+        this.treeManagerCustomerData = response.data;
+        this.dialogManagerCustomerVisible = true;
+      });
     },
     cancel(formName) {
       this.dialogFormVisible = false;
