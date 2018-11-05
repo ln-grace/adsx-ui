@@ -1,7 +1,8 @@
 <template>
   <div class="app-container calendar-list-container">
     <basic-container>
-      <div class="filter-container">
+      <!-- 1、搜索、添加 -->
+      <div class="filter-container" style="margin-bottom:10px;">
         <el-input @keyup.enter.native="handleFilter"
                   style="width: 200px;"
                   class="filter-item"
@@ -12,7 +13,7 @@
                    type="primary"
                    v-waves
                    icon="search"
-                   @click="handleFilter">搜索</el-button>
+                   @click="handleFilter" style="margin-left: 10px;">搜索</el-button>
         <el-button v-if="sys_user_add"
                    class="filter-item"
                    style="margin-left: 10px;"
@@ -20,7 +21,7 @@
                    type="primary"
                    icon="edit">添加</el-button>
       </div>
-
+      <!-- 2、表格 -->
       <el-table :key='tableKey'
                 :data="list"
                 v-loading="listLoading"
@@ -28,7 +29,7 @@
                 border
                 fit
                 highlight-current-row
-                style="width: 99%">
+                style="width: 99%;margin-bottom:10px;">
 
         <el-table-column align="center"
                          label="序号">
@@ -53,14 +54,14 @@
                          label="所属部门"
                          show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{scope.row.deptName}} </span>
+            <span>{{scope.row.deptName}}</span>
           </template>
         </el-table-column>
 
         <el-table-column align="center"
                          label="角色">
           <template slot-scope="scope">
-            <span v-for="role in scope.row.roleList">{{role.roleDesc}} </span>
+            <span v-for="role in scope.row.roleList" :key="role.roleId">{{role.roleDesc}} </span>
           </template>
         </el-table-column>
 
@@ -106,7 +107,8 @@
         </el-table-column>
 
       </el-table>
-
+       
+       <!-- 3、分页 -->
       <div v-show="!listLoading"
            class="pagination-container">
         <el-pagination @size-change="handleSizeChange"
@@ -119,6 +121,9 @@
         </el-pagination>
       </div>
     </basic-container>
+
+    <!-- 4、弹窗 -->
+    <!-- 部门树 -->
     <el-dialog :title="textMap[dialogStatus]"
                :visible.sync="dialogDeptVisible">
       <el-tree class="filter-tree"
@@ -133,8 +138,8 @@
                default-expand-all>
       </el-tree>
     </el-dialog>
-
-
+    
+    <!-- 选择账号树 -->
     <el-dialog :title="textMap[dialogStatus]"
                :visible.sync="dialogAdsAccountVisible">
       <el-tree class="filter-tree"
@@ -186,11 +191,11 @@
                      v-model="role"
                      placeholder="请选择"
                      multiple>
-            <el-option v-for="item in rolesOptions"
+              <el-option v-for="item in rolesOptions"
                        :key="item.roleId"
-                       :label="item.roleDesc"
+                       :label="item.roleDesc"   
                        :value="item.roleId"
-                       :disabled="isDisabled[item.delFlag]">
+                       :disabled="isDisabled[item.delFlag]"> 
               <span style="float: left">{{ item.roleDesc }}</span>
               <span style="float: right; color: #8492a6; font-size: 13px">{{ item.roleCode }}</span>
             </el-option>
@@ -207,7 +212,6 @@
                  v-model="form.adsAccountId" />
         </el-form-item>
 
-
         <el-form-item label="状态"
                       v-if="dialogStatus == 'update' && sys_user_del "
                       prop="delFlag">
@@ -221,6 +225,7 @@
           </el-select>
         </el-form-item>
       </el-form>
+
       <div slot="footer"
            class="dialog-footer">
         <el-button @click="cancel('form')">取 消</el-button>
@@ -281,7 +286,7 @@ export default {
         username: [
           {
             required: true,
-            message: "请输入账户",
+            message: "请输入用户名",
             trigger: "blur"
           },
           {
@@ -324,9 +329,9 @@ export default {
       dialogFormVisible: false,
       dialogDeptVisible: false,
       dialogAdsAccountVisible: false,
-      userAdd: false,
-      userUpd: false,
-      userDel: false,
+      // userAdd: false,
+      // userUpd: false,
+      // userDel: false,
       dialogStatus: "",
       textMap: {
         update: "编辑",
@@ -340,8 +345,8 @@ export default {
     };
   },
   computed: {
-     ...mapState({
-      adsAccount: state => state.user.adsAccount,
+    ...mapState({
+      adsAccount: state => adsAccoustate.user.nt,
     }),
     ...mapGetters(["permissions"])
   },
@@ -357,41 +362,41 @@ export default {
   },
   created () {
     this.getList();
+    //按钮权限
     this.sys_user_add = this.permissions["sys_user_add"];
     this.sys_user_edit = this.permissions["sys_user_edit"];
     this.sys_user_del = this.permissions["sys_user_del"];
   },
   methods: {
-    getList () {
+    getList () {  //分页查询
       this.listLoading = true;
       this.listQuery.isAsc = false;
       fetchList(this.listQuery).then(response => {
         this.list = response.data.records;
-        this.total = response.data.total;
+        this.total = response.data.total;   //总条数
         this.listLoading = false;
       });
-    },
+    },  //选择账号(数据)
     handleAdsAccount () {
       fetchChildrenTree(this.adsAccount.customerId).then(response => {
         this.treeAdsAccountData = response.data;
         this.dialogAdsAccountVisible = true;
       });
     },
-    getNodeData (data) {
+    getNodeData (data) {  //点击部门Tree中的子列表
       this.dialogDeptVisible = false;
       this.form.deptId = data.id;
       this.form.deptName = data.name;
-      deptRoleList(data.id).then(response => {
+      deptRoleList(data.id).then(response => {  //根据部门id查出相关角色
         this.rolesOptions = response.data;
       });
-    },
+    },  //点击选择账号Tree中的子列表
     getAdsAccountData(data) {
       this.dialogAdsAccountVisible = false;
       this.form.adsAccountId = data.id;
       this.form.customerName = data.name;
-
     },
-    handleDept () {
+    handleDept () {  //点击"选择部门"文本框,查出有关部门的数据放入Tree中
       fetchDeptTree().then(response => {
         this.treeDeptData = response.data;
         this.dialogDeptVisible = true;
@@ -400,7 +405,8 @@ export default {
     handleFilter () {
       this.listQuery.page = 1;
       this.getList();
-    },
+    }, 
+    //分页限制
     handleSizeChange (val) {
       this.listQuery.limit = val;
       this.getList();
@@ -409,12 +415,12 @@ export default {
       this.listQuery.page = val;
       this.getList();
     },
-    handleCreate () {
-      this.resetTemp();
+    handleCreate () {  //添加
+      this.resetTemp();  //重置
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
     },
-    handleUpdate (row) {
+    handleUpdate (row) {  //编辑
       getObj(row.userId).then(response => {
         this.form = response.data;
         this.dialogFormVisible = true;
@@ -428,7 +434,7 @@ export default {
         });
       });
     },
-    create (formName) {
+    create (formName) {   //添加(确定)
       const set = this.$refs;
       this.form.role = this.role;
       set[formName].validate(valid => {
@@ -448,11 +454,11 @@ export default {
         }
       });
     },
-    cancel (formName) {
+    cancel (formName) { //取消
       this.dialogFormVisible = false;
       this.$refs[formName].resetFields();
     },
-    update (formName) {
+    update (formName) { //编辑
       const set = this.$refs;
       this.form.role = this.role;
       set[formName].validate(valid => {
@@ -474,7 +480,7 @@ export default {
         }
       });
     },
-    deletes (row) {
+    deletes (row) {  //删除
       this.$confirm(
         "此操作将永久删除该用户(用户名:" + row.username + "), 是否继续?",
         "提示",
@@ -504,7 +510,7 @@ export default {
           });
       });
     },
-    resetTemp () {
+    resetTemp () {  //重置
       this.form = {
         id: undefined,
         username: "",

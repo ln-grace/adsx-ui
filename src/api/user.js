@@ -17,6 +17,7 @@
 
 import request from '@/router/axios'
 
+// 迫切查询
 export function fetchList(query) {
   return request({
     url: '/admin/user/userPage',
@@ -25,6 +26,7 @@ export function fetchList(query) {
   })
 }
 
+//添加
 export function addObj(obj) {
   return request({
     url: '/admin/user/',
@@ -33,6 +35,7 @@ export function addObj(obj) {
   })
 }
 
+//查询
 export function getObj(id) {
   return request({
     url: '/admin/user/' + id,
@@ -40,6 +43,7 @@ export function getObj(id) {
   })
 }
 
+//删除
 export function delObj(id) {
   return request({
     url: '/admin/user/' + id,
@@ -47,6 +51,7 @@ export function delObj(id) {
   })
 }
 
+//修改
 export function putObj(obj) {
   return request({
     url: '/admin/user',

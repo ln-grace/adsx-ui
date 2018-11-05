@@ -175,7 +175,6 @@
                    @click="create('form')">确 定</el-button>
       </div>
     </el-dialog>
-
   </div>
 </template>
 
@@ -227,7 +226,7 @@ export default {
         currencyCode: undefined,
         dateTimeZone: undefined,
         websiteUrl: undefined,
-        parentId: undefined
+        parentId: undefined,
       },
       rules: {
         customerName: [
