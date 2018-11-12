@@ -17,7 +17,7 @@
 
 import request from '@/router/axios'
 
-// 迫切查询
+//查询
 export function fetchList(query) {
   return request({
     url: '/admin/user/userPage',
